@@ -2,7 +2,7 @@
 //и предоставленному шаблону.
 
 import galleryItems from './data/app.js'
-console.log(galleryItems)
+// console.log(galleryItems)
 
 const list = document.querySelector('.js-gallery');
 
@@ -58,46 +58,44 @@ const modal = document.querySelector('.js-lightbox');
 const modalImage = document.querySelector('.lightbox__image');
 
 function onOpenModal() {
-  modal.classList.add('is-open')
+  window.addEventListener('keydown', onEscKeyPress);
+  window.addEventListener('keydown', scrolImg);
+  modal.classList.add('is-open');
 }
 
 list.addEventListener('click', (e) => {
   e.preventDefault()
   
   if (e.target.nodeName === 'IMG') {
-    onOpenModal()
-    modalImage.setAttribute('src', e.target.dataset.source)
-    modalImage.setAttribute('alt', e.target.alt)
+    onOpenModal();
+    modalImage.setAttribute('src', e.target.dataset.source);
+    modalImage.setAttribute('alt', e.target.alt);
   }
 })
 
 //5. Закрытие модального окна по клику на кнопку 
 //button[data - action= "close-lightbox"].
 //6. Очистка значения атрибута src элемента img.lightbox__image.
-const closeBtn = document.querySelector('[data-action="close-lightbox"]')
+const closeBtn = document.querySelector('[data-action="close-lightbox"]');
 
 function onCloseModal() {
-  modal.classList.remove('is-open')
-  modalImage.removeAttribute('src')
-  modalImage.removeAttribute('alt')
+  window.removeEventListener('keydown', onEscKeyPress);
+  window.removeEventListener('keydown', scrolImg);
+  modal.classList.remove('is-open');
+  modalImage.removeAttribute('src');
+  modalImage.removeAttribute('alt');
 }
 
-closeBtn.addEventListener('click', () => {
-  onCloseModal()
-})
+closeBtn.addEventListener('click', onCloseModal);
 
 //Закрытие модального окна по клику на div.lightbox__overlay.
 
-modal.firstElementChild.addEventListener('click', onBackdropClick)
-function onBackdropClick(e) {
-  if (e.currentTarget === e.target) {
-    onCloseModal();
-  }
-}
+const backdrop = document.querySelector('.lightbox__overlay');
+backdrop.addEventListener('click', onCloseModal);
 
 //Закрытие модального окна по нажатию клавиши ESC.
-window.addEventListener('keydown', closeModalByKey)
-function closeModalByKey(e) {
+
+function onEscKeyPress(e) {
   const isEscKey = e.code === 'Escape';
 
   if (isEscKey) {
@@ -107,22 +105,29 @@ function closeModalByKey(e) {
 
 //Пролистывание изображений галереи в открытом модальном окне 
 //клавишами "влево" и "вправо".
-window.addEventListener('keydown', scrolImg)
-
 
 function scrolImg(e) {
-  let current = galleryItems.findIndex(i => i.original === e.target.href);
+  let count = 0;
+  let currentEl = galleryItems.findIndex(i => i.original === modalImage.src);
+  if (e.code === 'ArrowLeft') {
+    count = currentEl - 1;
+    if (count<0) {
+      count = galleryItems.length-1;
+    };
+  }
+  if (e.code === 'ArrowRight') {
+    count = currentEl + 1;
+    if (count > galleryItems.length-1) {
+      count = 0;
+    };
+  }
+  modalImage.src = galleryItems[count].original;
+  modalImage.alt = galleryItems[count].description;
+  // console.log(modalImage.src)
+  // console.log(modalImage.alt) 
+}
+
+
   
 
-  switch (e.code) {
-    case 'ArrowLeft':
-      modalImage.src = galleryItems[current - 1].original;
-      modalImage.alt = galleryItems[current - 1].description;
-    break;
 
-    case 'ArrowRight':
-      modalImage.src = galleryItems[current + 1].original;
-      modalImage.alt = galleryItems[current + 1].description;
-    break;
-  }
-}
